@@ -18,7 +18,7 @@ Pula pirata is an online multiplayer game, inspired in the classic "Jump Pirate"
 
 It can be played at:
 
-- https://www.adelsonguimaraes.com.br/pula_pirata/prototipo/
+- https://pulapirata.adelsonguimaraes.com.br
 
 - The portuguese project documentation can be found [here](https://opposite-eyelash-d55.notion.site/Pula-Pirata-HUB-76adb9e4317a4495b65e0ac12ce7f26f).
 
