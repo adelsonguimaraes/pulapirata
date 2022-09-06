@@ -6,6 +6,9 @@ const path = require('path')
 router.get('/', (req, res) => {
     res.sendFile(path.resolve('./public/index.html'));
 });
+router.get('/music_box', (req, res) => {
+    res.sendFile(path.resolve('./public/app/views/components/music_box/music_box.html'));
+});
 router.get('/login', (req, res) => {
     res.sendFile(path.resolve('./public/app/views/login.html'));
 });

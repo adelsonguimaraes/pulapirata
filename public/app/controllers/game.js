@@ -22,6 +22,8 @@ class game {
         this.render(page);
 
         this.welcome()
+
+        musicBox.start()
     }
 
     welcome() {
@@ -46,7 +48,7 @@ class game {
     }
 
     confirmWelcome() {
-        this.playSound('pirate_music', 2)
+        musicBox.playToggle()
         this.MODAL.close()
     }
 

@@ -1,0 +1,190 @@
+.music-box {
+    overflow: hidden;
+    width: 300px;
+    border-collapse: collapse;
+    border-radius: 10px;
+    box-shadow: 2px 0px 7px 0px rgb(0 0 0 / 21%);
+    position: fixed;
+    bottom: -250px;
+    left: 0;
+    z-index: 10000;
+    transition: .5s;
+    font-family: sans-serif;
+    background-color: #323232;
+}
+
+.show-music-box {
+    bottom: 0;
+}
+
+.music-box .header {
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+    background-color: #323232;
+    color: snow;
+    padding: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+}
+
+.music-box .header div {
+    flex: 1;
+}
+.music-box .header i {
+    width: 20px;
+}
+
+.music-box .body {
+    height: 150px;
+    /* background-image: url(); */
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: relative;
+    animation: animate 120s ease-out 0s infinite normal none;
+}
+
+.music-box .body .controls {
+    position: absolute;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    right: 0;
+    bottom: -22px;
+}
+
+.music-box .body .controls .prev {
+    color: rgb(245, 245, 245);
+    cursor: pointer;
+    height: 40px;
+    width: 40px;
+    border-radius: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: blueviolet;
+    box-shadow: 3px 2px 2px -1px rgba(0, 0, 0, 0.12);
+}
+.music-box .body .controls .prev i {
+    font-size: 20px;
+    text-align: center;
+    width: 24px;
+}
+
+.music-box .body .controls .play_pause {
+    color: rgb(245, 245, 245);
+    cursor: pointer;
+    height: 50px;
+    width: 50px;
+    border-radius: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: blueviolet;
+    box-shadow: 3px 2px 2px -1px rgba(0, 0, 0, 0.12);
+}
+.music-box .body .controls .play_pause i {
+    font-size: 24px;
+    text-align: center;
+    width: 24px;
+}
+
+.music-box .body .controls .next {
+    color: rgb(245, 245, 245);
+    cursor: pointer;
+    height: 40px;
+    width: 40px;
+    border-radius: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: blueviolet;
+    box-shadow: 3px 2px 2px -1px rgba(0, 0, 0, 0.12);
+}
+.music-box .body .controls .next i {
+    font-size: 20px;
+    text-align: center;
+    width: 24px;
+}
+
+.music-box .separate {
+    height: 25px;
+    background-color: #323232;
+}
+
+.music-box .footer {
+    padding-left: 10px;
+    padding-right: 10px;
+    position: relative;
+    background: #d9d9d9;
+}
+
+.music-box .footer .title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 10px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+}
+.music-box .footer audio {
+    width: 100%;
+}
+.music-box .footer .controls {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+.music-box .footer .duration_seekbar {
+    flex: 1;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+.music-box .footer input {
+    width: 100%;
+}
+.music-box .footer .vol-mute {
+    cursor: pointer;
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    height: 15px;
+    width: 28px;
+}
+.music-box .footer .vol-mute:hover .vol-seekbar {
+    display: block;
+    transition: .5s;
+}
+.music-box .footer .vol-mute .vol-seekbar {
+    display: none;
+    width: 50px;
+    transform: rotateZ(-90deg);
+    position: absolute;
+    right: -5px;
+    bottom: 40px;
+}
+
+@keyframes animate {
+	0% {
+		background-position: center bottom;
+		background-size: 100%;
+	}
+
+    50% {
+		background-position: center bottom;
+		background-size: 150%;
+	}
+
+	100% {
+		background-position: center bottom;
+		background-size: 100%;
+	}
+
+    
+}
