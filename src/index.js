@@ -27,6 +27,47 @@ io.on('connection', (socket) => {
     //     socket.emit('who-are-you')
     // }
 
+    function clickOnSlot(user_id, slot_id) {
+
+        const players = user_connections.clickOnSlot(user_id, slot_id)
+
+        socket.emit('data-room', { 'data': user_connections.getPublicRoomData(players[0].room_id) })
+
+        players.forEach(e => {
+            // if (e.user_id !== user_id) {
+                socket.to(e.user_socket_id).emit('data-room', { 'data': user_connections.getPublicRoomData(players[0].room_id) })
+            // }
+        })
+    }
+
+    function runTimerTurn(roomPlayers) {
+
+        const interval = setInterval(() => {
+            room = user_connections.getRoomById(roomPlayers[0].room_id)
+
+            socket.emit('timer-turn', { timer: room.room_time_turn })
+
+            roomPlayers.forEach(e => {
+                socket.to(e.user_socket_id).emit('timer-turn', { timer: room.room_time_turn })
+            })
+
+            room.room_time_turn--
+
+            if (room.room_status == 3) clearInterval(interval)
+
+            if (room.room_time_turn < 0) {
+                room.room_time_turn = user_connections.ROOM_TIMER_TURN
+                const slot = user_connections.getRandomSlotAvailable(room.room_id)
+                
+                clickOnSlot(room.room_turn_player, slot.slot_id)
+
+                room = user_connections.getPublicRoomData(room.room_id)
+                if (room.room_status == 3) clearInterval(interval)
+                
+            }
+        }, 1000)
+    }
+
     // connect lobby
     socket.on('connect-lobby', (data) => {
         // adicionando o socket_id
@@ -39,12 +80,12 @@ io.on('connection', (socket) => {
         if (u) {
             // pega todos os jogadores da sala
             const ps = user_connections.players.filter(e => e.room_id === u.room_id)
-            if (ps.length<=1) {
+            if (ps.length <= 1) {
                 // se haver apenas ele ou menos, removemos a sala
                 user_connections.rooms = user_connections.rooms.filter(e => e.room_id != u.room_id)
             }
         }
-        
+
         const room = user_connections.createUpdateRoom(data)
         const user = user_connections.createUpdateUser(data)
 
@@ -54,7 +95,7 @@ io.on('connection', (socket) => {
         });
 
         // emitindo para todos os demais do lobby
-        for(conn of user_connections.getOuthers(socket.id)) {
+        for (conn of user_connections.getOuthers(socket.id)) {
             if (conn.room_id === 'lobby') {
                 socket.to(conn.user_socket_id).emit('data', {
                     'data': user_connections.getPublicData()
@@ -74,7 +115,7 @@ io.on('connection', (socket) => {
         data.user_name = user.user_name
 
         user_connections.createUpdateRoom(data)
-        
+
         user_connections.setRoomId(data.user_id, room_id)
         user_connections.setUserColor(data.user_id)
 
@@ -84,13 +125,13 @@ io.on('connection', (socket) => {
 
         // for (conn of user_connections.getRoomPlayers(room_id)) {
         for (conn of user_connections.getOuthers(socket.id)) {
-            socket.to(conn.user_socket_id).emit('data', {'data': user_connections.getPublicData ()})
+            socket.to(conn.user_socket_id).emit('data', { 'data': user_connections.getPublicData() })
         }
     });
 
     // map slots
     socket.on('map-slots', (data) => {
-        user_connections.createUpdateSlots (data)
+        user_connections.createUpdateSlots(data)
     })
 
     // cancel room
@@ -99,7 +140,7 @@ io.on('connection', (socket) => {
             user_connections.cancelRoom(data)
             socket.emit('canceled-room')
         } catch (err) {
-            socket.emit('cancel-room-not-authorized', ({msg: err}))
+            socket.emit('cancel-room-not-authorized', ({ msg: err }))
         }
     })
 
@@ -108,25 +149,25 @@ io.on('connection', (socket) => {
 
         const user = user_connections.getDataByUserId(data.user_id)
         const room = user_connections.getRoomById(data.room_id)
-        
-        if (room.room_pass!==data.room_pass) {
+
+        if (room.room_pass !== data.room_pass) {
             return socket.emit('not-authorized-room')
         }
 
         user_connections.setRoomId(data.user_id, data.room_id)
         user_connections.setUserColor(data.user_id)
-        
+
         socket.emit('enter-room-confirmed', {
             data: user_connections.getPublicRoomData(data.room_id)
         })
 
         for (conn of user_connections.getOuthers(socket.id)) {
             // players in room
-            if(conn.room_id===room.room_id) {
-                socket.to(conn.user_socket_id).emit('data-room', {'data': user_connections.getPublicRoomData(data.room_id)})
-            // outhers users
-            }else{
-                socket.to(conn.user_socket_id).emit('data', {'data': user_connections.getPublicData ()})
+            if (conn.room_id === room.room_id) {
+                socket.to(conn.user_socket_id).emit('data-room', { 'data': user_connections.getPublicRoomData(data.room_id) })
+                // outhers users
+            } else {
+                socket.to(conn.user_socket_id).emit('data', { 'data': user_connections.getPublicData() })
             }
         }
     })
@@ -141,24 +182,26 @@ io.on('connection', (socket) => {
         try {
             const roomPlayers = user_connections.startGame(data)
 
+            runTimerTurn(roomPlayers)
+
             roomPlayers.forEach(e => {
                 // emitindo para o jogador que startou a sala
                 if (e.user_id === data.user_id) {
-                    socket.emit('start-game-confirmed', {'data': user_connections.getPublicRoomData (e.room_id)})
-                // emitindo para os demais jogadores da sala
-                }else{
-                    socket.to(e.user_socket_id).emit('data-room', {'data': user_connections.getPublicRoomData (e.room_id)})
+                    socket.emit('start-game-confirmed', { 'data': user_connections.getPublicRoomData(e.room_id) })
+                    // emitindo para os demais jogadores da sala
+                } else {
+                    socket.to(e.user_socket_id).emit('data-room', { 'data': user_connections.getPublicRoomData(e.room_id) })
                 }
             })
 
             // emitindo para jogadores no lobby
             user_connections.players.forEach(e => {
                 if (e.room_id === 'lobby') {
-                    socket.to(e.user_socket_id).emit('data', {'data': user_connections.getPublicData()})
+                    socket.to(e.user_socket_id).emit('data', { 'data': user_connections.getPublicData() })
                 }
             })
         } catch (error) {
-            socket.emit('start-room-not-authorized', {msg: error})
+            socket.emit('start-room-not-authorized', { msg: error })
         }
     })
 
@@ -180,18 +223,10 @@ io.on('connection', (socket) => {
 
     socket.on('click-on-slot', (data) => {
         try {
-            const players = user_connections.clickOnSlot(data)
-
-            socket.emit('data-room', {'data': user_connections.getPublicRoomData(players[0].room_id)})
-            
-            players.forEach(e => {
-                if (e.user_id !== data.user_id) {
-                    socket.to(e.user_socket_id).emit('data-room', {'data': user_connections.getPublicRoomData(players[0].room_id)})
-                }
-            })
-
-        }catch(e) {
-            socket.emit('click-on-slot-error', {error: e})
+            clickOnSlot(data.user_id, data.slot_id)
+            // room.room_time_turn = user_connections.ROOM_TIMER_TURN
+        } catch (e) {
+            socket.emit('click-on-slot-error', { error: e })
         }
     })
 
@@ -233,7 +268,7 @@ io.on('connection', (socket) => {
 
 
         // se restar apenas um jogador na sala
-        if (players.length==1 && room.room_status==2) {
+        if (players.length == 1 && room.room_status == 2) {
             // colocamos o status da sala como finalizado
             // um tratamento no front deve ser feito para sinalizar que o jogador venceu por desistência
             room.room_status = 5
@@ -241,16 +276,16 @@ io.on('connection', (socket) => {
         }
 
         // removendo a sala do servidor caso não haja mais nenhum jogador
-        if (players.length<=0) {
+        if (players.length <= 0) {
             user_connections.rooms = user_connections.rooms.filter(e => e.room_id != room.room_id)
         }
-        
+
 
         user_connections.players.forEach(e => {
             if (user.room_id != 'lobby' && user.room_id === e.room_id) {
-                socket.to(e.user_socket_id).emit('data-room', {'data': user_connections.getPublicRoomData(user.room_id)})
-            }else{
-                socket.to(e.user_socket_id).emit('data', {'data': user_connections.getPublicData()})
+                socket.to(e.user_socket_id).emit('data-room', { 'data': user_connections.getPublicRoomData(user.room_id) })
+            } else {
+                socket.to(e.user_socket_id).emit('data', { 'data': user_connections.getPublicData() })
             }
         })
 
@@ -268,6 +303,6 @@ io.on('connection', (socket) => {
 });
 
 
-server.listen(4000, ()=>{
+server.listen(4000, () => {
     console.log('aplicação rodando na porta 4000');
 });

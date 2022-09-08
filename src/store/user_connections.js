@@ -1,5 +1,4 @@
 const e = require("cors")
-
 const user_connections = {
 
     /*
@@ -67,11 +66,12 @@ const user_connections = {
         slot_color: '',
         slot_shoot: ''
     },
-    createUpdateRoom (data) {
+    ROOM_TIMER_TURN: 20,
+    createUpdateRoom(data) {
         let room = {}
         const index = this.rooms.findIndex(e => e.room_id === data.room_id)
 
-        if (index===-1) room = Object.assign({}, this.modelRoom)
+        if (index === -1) room = Object.assign({}, this.modelRoom)
         else room = this.rooms[index]
 
         room.room_id = data.room_id
@@ -81,35 +81,35 @@ const user_connections = {
         room.room_privated = (data.room_pass) ? true : false
         room.room_turn_player = data.user_id
 
-        if (index===-1) this.rooms.push(room)
+        if (index === -1) this.rooms.push(room)
         else this.rooms[index] = room
 
         return room
     },
-    createUpdateUser (data) {
+    createUpdateUser(data) {
         let user = {}
 
         const index = this.players.findIndex(p => p.user_id === data.user_id)
 
-        if (index===-1) user = Object.assign({}, this.modelUser)
+        if (index === -1) user = Object.assign({}, this.modelUser)
         else user = this.players[index]
 
         user.user_id = data.user_id,
-        user.user_name = data.user_name
+            user.user_name = data.user_name
         user.user_color = (data.user_color) ? data.user_color : user.user_color
         user.user_status = (data.user_status) ? data.user_status : user.user_status
         user.user_socket_id = data.user_socket_id
         user.room_id = data.room_id
 
-        if (index===-1) this.players.push(user)
+        if (index === -1) this.players.push(user)
         else this.players[index] = user
 
         return user
 
     },
-    createUpdateSlots (data) {
+    createUpdateSlots(data) {
         // select randomic slot shoot
-        const indexShoot = Math.floor(Math.random()*data.length)
+        const indexShoot = Math.floor(Math.random() * data.length)
         data[indexShoot].shoot = true
 
         data.forEach(e => {
@@ -117,7 +117,7 @@ const user_connections = {
 
             const index = this.slots.findIndex(s => s.slot_id == e.id && s.room_id)
 
-            if (index===-1) slot = Object.assign({}, this.modelSlot)
+            if (index === -1) slot = Object.assign({}, this.modelSlot)
             else slot = this.slots[index]
 
             slot.slot_id = e.id
@@ -209,7 +209,7 @@ const user_connections = {
         //      room.room_owner = newOwner.user_id
         //      room.room_owner_name = newOwner.user_name
         //      room.turn_player = newOwner.user_id
-             
+
         //      // retorna um aviso
         //      return {
         //          msg: `${user.user_name} era o dono da sala e saiu agora ${newOwner.user_name} é o novo dono.`,
@@ -236,7 +236,7 @@ const user_connections = {
         //     console.log('desconect 3')
         //     // remove a sala
         //     this.rooms = this.rooms.filter(e => e.room_id !== user.room_id)
-            
+
         //     // remove todos os demais jogadores para o looby
         //     roomPlayers.forEach(e => {
         //         this.players.forEach(p => {
@@ -276,69 +276,69 @@ const user_connections = {
 
         // }
     },
-    setUserColor (user_id) {
+    setUserColor(user_id) {
         const player = this.players.find(d => d.user_id == user_id)
         const color = this.colors.find(c => {
             let x = false
             this.getRoomPlayers(player.room_id).find(e => {
-                if (c==e.user_color) x = true
+                if (c == e.user_color) x = true
             })
             if (!x) return c
         })
-            
+
         player.user_color = color || this.colors[0]
         return player
     },
-    getRoomById (room_id) {
+    getRoomById(room_id) {
         return this.rooms.find(e => e.room_id == room_id)
     },
-    setRoomId (user_id, room_id) {
+    setRoomId(user_id, room_id) {
         const i = this.players.findIndex(d => d.user_id == user_id)
         this.players[i].room_id = room_id
         return this.players[i]
     },
-    setRoomOwner (user_id, bool) {
+    setRoomOwner(user_id, bool) {
         const i = this.data.findIndex(d => d.user_id == user_id)
         this.data[i].room_owner = bool
         return this.data[i]
     },
-    setRoomTimer (user_id) {
+    setRoomTimer(user_id) {
         const i = this.data.findIndex(d => d.user_id == user_id)
         this.data[i].room_timer = new Date()
         return this.data[i]
     },
-    setRoomPass (user_id, room_pass) {
-        const i = this.rooms.findIndex(d => d.user_id == user_id)
-        this.rooms[i].room_pass = room_pass
-        this.rooms[i].room_privated = (room_pass !== '') ? true : false
-        return this.rooms[i]
-    },
-    getRoomPlayers (room_id) {
+    // setRoomPass(user_id, room_pass) {
+    //     const i = this.rooms.findIndex(d => d.user_id == user_id)
+    //     this.rooms[i].room_pass = room_pass
+    //     this.rooms[i].room_privated = (room_pass !== '') ? true : false
+    //     return this.rooms[i]
+    // },
+    getRoomPlayers(room_id) {
         return this.players.filter(d => d.room_id === room_id);
     },
-    getOuthersRoomPlayers (room_id) {
+    getOuthersRoomPlayers(room_id) {
         return this.players.filter(d => d.room_id === room_id);
     },
-    getPublicDataUser (user_id) {
+    getPublicDataUser(user_id) {
         const i = this.players.findIndex(d => d.user_id == user_id)
 
         const data = {
-            user_id:  this.data[i].user_id,
-            user_name:  this.data[i].user_name,
+            user_id: this.data[i].user_id,
+            user_name: this.data[i].user_name,
             user_color: this.data[i].user_color,
-            room_id:  this.data[i].room_id,
-            room_privated:  this.data[i].room_privated,
+            room_id: this.data[i].room_id,
+            room_privated: this.data[i].room_privated,
             room_owner: this.data[i].room_owner,
             room_turn_player: this.data[i].room_turn_player
         }
         return data
     },
-    getStatusRoom (room_status) {
+    getStatusRoom(room_status) {
         let status = 'ABERTA'
-        if (room_status===1) status = 'CHEIA'
-        if (room_status===2) status = 'EM GAME'
-        if (room_status===3 || room_status===5) status = 'FINALIZADO'
-        if (room_status===4) status = 'EXPIRADO'
+        if (room_status === 1) status = 'CHEIA'
+        if (room_status === 2) status = 'EM GAME'
+        if (room_status === 3 || room_status === 5) status = 'FINALIZADO'
+        if (room_status === 4) status = 'EXPIRADO'
         return status
     },
     getSlotsPublicData(room_id) {
@@ -357,7 +357,12 @@ const user_connections = {
 
         return publicData
     },
-    getPublicRoomData (room_id) {
+    getRandomSlotAvailable(room_id) {
+        const slots = this.slots.filter(e => e.room_id === room_id && !e.slot_checked)
+        const index = Math.floor(Math.random() * slots.length)
+        return slots[index]
+    },
+    getPublicRoomData(room_id) {
 
         const room = this.rooms.find(r => r.room_id === room_id)
 
@@ -370,15 +375,22 @@ const user_connections = {
             room_status_description: this.getStatusRoom(room.room_status),
             room_players: this.players.filter(p => p.room_id === room.room_id),
             room_slots: this.getSlotsPublicData(room_id),
-            room_turn_player: room.room_turn_player
+            room_turn_player: room.room_turn_player,
+            room_time_turn: room.room_time_turn
         }
 
         return publicData
     },
-    getPlayersInRoom (room_id) {
+    getPlayersInRoom(room_id) {
         return this.players.filter(e => e.room_id === room_id)
     },
-    getPublicData () {
+    getNextPlayer(user_id, room_id) {
+        const players = user_connections.getRoomPlayers(room_id)
+        const index = players.findIndex(e => e.user_id === user_id)
+        const next_player = (players[index + 1] == undefined) ? players[0] : players[index + 1]
+        return next_player
+    },
+    getPublicData() {
         const publicData = []
         this.rooms.map(room => {
             const r = {
@@ -397,7 +409,7 @@ const user_connections = {
 
         return publicData
     },
-    cancelRoom (data) {
+    cancelRoom(data) {
         const owner = this.rooms.find(r => r.room_owner === data.user_id)
 
         if (!owner) throw 'Você não tem permissão!'
@@ -410,21 +422,25 @@ const user_connections = {
 
         this.rooms = this.rooms.filter(e => e.room_id !== data.room_id)
     },
-    startGame (data) {
+    setRoomTimeTurn(room_id, timer) {
+        room = this.rooms.find(e => e.room_id === room_id)
+        room.room_time_turn = timer
+    },
+    startGame(data) {
         const owner = this.rooms.find(r => r.room_owner === data.user_id)
         if (!owner) throw 'Você não tem permissão!'
 
-        const room = this.rooms.find(e => e.room_id === owner.room_id)
-        room.room_status = 2 // em game
+        owner.room_status = 2 // em game
+        owner.room_time_turn = this.ROOM_TIMER_TURN
 
         return this.players.filter(e => e.room_id === owner.room_id)
     },
-    clickOnSlot (data) {
+    clickOnSlot(user_id, slot_id) {
 
-        const user = this.getDataByUserId(data.user_id)
+        const user = this.getDataByUserId(user_id)
         if (!user) throw 'Você não tem permissão!'
 
-        const slot = this.slots.find(e => e.slot_id === data.slot_id)
+        const slot = this.slots.find(e => e.slot_id === slot_id)
         if (!slot) throw 'Houve um erro o slot não foi encontrado!'
 
         const room = this.rooms.find(e => e.room_turn_player === user.user_id && e.room_id === user.room_id)
@@ -440,10 +456,10 @@ const user_connections = {
         if (slot.slot_shoot) {
             room.room_status = 3
             room.room_status_description = this.getStatusRoom(room.room_status)
-        }else{
-            const index = players.findIndex(e => e.user_id === user.user_id)
-            const next_player = (players[index+1]==undefined) ? players[0] : players[index+1]
+        } else {
+            const next_player = this.getNextPlayer(user.user_id, user.room_id)
             room.room_turn_player = next_player.user_id
+            room.room_time_turn = this.ROOM_TIMER_TURN
         }
 
         return players

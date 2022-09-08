@@ -11,6 +11,7 @@ class game {
         this.USER = document.querySelector('div.user')
         this.RENDER = document.querySelector('div.render')
         this.ROOMS = {}
+        this.MY_TURN
 
         // verificando se o usuário possui uma sessão
         if (!this.SESSION.isValid()) {
@@ -24,6 +25,8 @@ class game {
         this.welcome()
 
         musicBox.start()
+
+        this.socketOnEvents()
     }
 
     welcome() {
@@ -89,15 +92,6 @@ class game {
             'user_id': (this.SESSION.getUserId()),
             'user_name': (this.SESSION.getName().split(' ')[0])
         })
-
-        // recebendo lista de usuários atualizada a cada nova conexão
-        this.socket.on('data', (data) => {
-            console.log(data)
-
-            this.ROOMS = data.data
-            this.renderRooms(data)
-        })
-
     }
 
     renderRooms (data) {
@@ -177,22 +171,8 @@ class game {
             user_id: this.SESSION.getUserId(), 
             room_pass: room_pass
         }
-        
+
         this.socket.emit('create-room', data);
-        this.socket.on('create-room-confirmed', async (data) => {
-        
-            const me = data.data.room_players.find(e => e.user_id === this.SESSION.getUserId())
-
-            this.SESSION.setRoomID(me.room_id)
-            this.SESSION.setColor(me.user_color)
-            // this.SESSION.setRoomOwner(me.room_owner)
-
-            await this.render('room')
-
-            this.socket.emit('map-slots', this.mapSlots(data.data))
-
-            this.showPlayers (data.data)
-        })
     }
 
     cancelCreate () {
@@ -208,27 +188,6 @@ class game {
         this.socket.emit('connect-room', {
             user_id: this.SESSION.getUserId()
         })
-        // recebendo sinal de não conectado
-        this.socket.on('not-connect', () => {
-            this.SESSION.setRoomID('lobby')
-            this.render('lobby')
-            // window.location.replace('/lobby')
-        })
-        
-        // recebendo dados da sala deo utros jogadores
-        this.socket.on('data-room', async (data) => {
-
-            console.log(data);
-
-            this.showPlayers(data.data)
-            this.setSlots(data.data)
-        })
-
-        // tornando novo dono da sala por desistência
-        this.socket.on('room_new_owner', async (data) => {
-            this.showPlayers(data.data)
-            this.ERROR.showError(data.msg)
-        })
     }
 
     cancelRoom (room_id) {
@@ -240,17 +199,6 @@ class game {
         // this.SPLASH_SCREEN.showSplash();
 
         this.socket.emit('cancel-room', obj)
-
-        // cancelamento de sala não autorizado
-        this.socket.on('cancel-room-not-authorized', (data) => {
-            return this.ERROR.showError(data.msg);
-        })
-
-        // cacelamento confirmado
-        this.socket.on('canceled-room', () => {
-            this.SESSION.setRoomID('lobby')
-            this.render('lobby')
-        })
     }
 
     enterRoom (room_id) {
@@ -310,29 +258,7 @@ class game {
         this.MODAL.close();
         // this.SPLASH_SCREEN.showSplash();
         
-
         this.socket.emit('enter-room', (obj))
-
-        // senha invalida
-        this.socket.on('not-authorized-room', () => {
-            this.SPLASH_SCREEN.closeSplash();
-            return this.ERROR.showError("Acesso não autorizado, tente novamente!");
-        })
-
-        // confirma entrada na sala
-        this.socket.on('enter-room-confirmed', async (data) => {
-        // this.socket.on('data-room', async (data) => {
-            
-            const me = data.data.room_players.find(e => e.user_id === this.SESSION.getUserId())
-
-            this.SESSION.setRoomID(me.room_id)
-            this.SESSION.setColor(me.user_color)
-
-            await this.render('room')
-            
-            this.showPlayers(data.data)
-            this.setSlots(data.data)
-        })
     }
 
 
@@ -344,7 +270,9 @@ class game {
             let inRoom = false;
             let li = '';
             let ul = this.PLAYERS.querySelector('ul');
-            let move = this.PLAYERS.querySelector('span');
+            const move = this.PLAYERS.querySelector('div.move');
+            const label = this.PLAYERS.querySelector('div.move label');
+            const span = this.PLAYERS.querySelector('div.move span');
 
             data.room_players.forEach(e => {
                 li += `
@@ -362,7 +290,15 @@ class game {
 
                 // verificando jogador da vez
                 if (data.room_turn_player === e.user_id) {
-                    move.innerHTML = `${e.user_name.split(' ')[0]}`;
+                    if (this.SESSION.getUserId() === data.room_turn_player) {
+                        move.classList.add('move-highlight')
+                        label.innerHTML = `Agora é sua vez`
+                        span.innerHTML = `${e.user_name.split(' ')[0]}`
+                    }else{
+                        move.classList.remove('move-highlight')
+                        label.innerHTML = `Agora é a vez de`
+                        span.innerHTML = `${e.user_name.split(' ')[0]}`
+                    }
                 }
             });
 
@@ -374,17 +310,18 @@ class game {
     }
 
     showMyTurn () {
-        this.MODAL.show({
-            header:`
-                <h3>Sua vez de jogar!</h3>
-                <small>Vamos lá, pense bem qual slot marcar para não perder o jogo!</small>
-            `,
-            content: `
-            <img style="max-width:400px;" src="https://cdn.dribbble.com/users/2844289/screenshots/7721137/pirate_run-cycle_dribbble_00096.gif">
-            <div class="inline">
-                <button onclick="GAME.confirmMyTurn()">Ok</button>
-            </div>`
-        });
+
+        // this.MODAL.show({
+        //     header:`
+        //         <h3>Sua vez de jogar!</h3>
+        //         <small>Vamos lá, pense bem qual slot marcar para não perder o jogo!</small>
+        //     `,
+        //     content: `
+        //     <img style="max-width:400px;" src="https://cdn.dribbble.com/users/2844289/screenshots/7721137/pirate_run-cycle_dribbble_00096.gif">
+        //     <div class="inline">
+        //         <button onclick="GAME.confirmMyTurn()">Ok</button>
+        //     </div>`
+        // });
 
         // this.playSound('my_turn', 1)
     }
@@ -431,9 +368,13 @@ class game {
             console.log('status 2: game')
             this.MODAL.close()
             this.SPLASH_SCREEN.closeSplash()
-            // this.getPositionMouse ()
+            this.MY_TURN = (data.room_turn_player===this.SESSION.getUserId())
+
+
+            // if (this.MY_TURN) this.getPositionMouse()
             
-            if (data.room_turn_player===this.SESSION.getUserId()) this.showMyTurn()
+            
+            // if (data.room_turn_player===this.SESSION.getUserId()) this.showMyTurn()
         } 
         if (data.room_status === 3) {
             console.log('status 3: finalizado')
@@ -602,60 +543,22 @@ class game {
         obj.user_id = this.SESSION.getUserId();
         
         this.socket.emit('start-game' , obj)
-        this.socket.on('start-game-confirmed', (data) => {
-            this.showPlayers(data.data)
-        })
     }
 
     // getPositionMouse () {
-    //     document.onmousemove = (e) => {
+    //     const offset = document.querySelector('div.game').getBoundingClientRect()
+    //     const socket = this.socket
+    //     const userId = this.SESSION.getUserId()
 
-    //         this.socket.emit('show-my-position-cursor', ({
-    //             user_id: this.SESSION.getUserId(),
+    //     document.querySelector('div.game').addEventListener('mousemove', function (e) {
+
+    //         socket.emit('show-my-position-cursor', ({
+    //             user_id: userId,
     //             cursor: {
-    //                 x: e.x/window.innerWidth, 
-    //                 y: e.y
+    //                 left: e.pageX-e.currentTarget.offsetLeft,
+    //                 right: e.pageY-e.currentTarget.offsetTop
     //             }
     //         }))
-    //     }
-
-    //     this.socket.on('show-outher-cursor-position', (data) => {
-    //         const body = document.body;
-    //         const cursor = document.getElementById(`${data.user_id}`) || document.createElement('div')
-    //         cursor.innerHTML = ''
-
-    //         const icon = document.createElement('i')
-    //         icon.classList.add(`fa`)
-    //         icon.classList.add(`fa-hand-pointer`)
-    //         icon.style = `color: #${data.user_color};`
-
-    //         cursor.appendChild(icon)
-
-    //         const label = document.createElement('label')
-    //         label.style = `
-    //             font-size: 8px;
-    //             padding: 5px;
-    //         `
-    //         label.innerHTML = data.user_name
-
-    //         cursor.appendChild(label)
-
-    //         cursor.style = `
-    //             width: 120px;
-    //             display: flex;
-    //             flex-direction: column;
-    //             position: absolute;
-    //             pointer-events: none;
-    //             left: ${(data.cursor.x*window.innerWidth)}px;
-    //             top: ${data.cursor.y}px;
-    //             z-index: 1;
-    //             align-items: center;
-
-    //         `
-
-    //         cursor.id = data.user_id
-            
-    //         body.appendChild(cursor)
     //     })
     // }
 
@@ -666,10 +569,6 @@ class game {
             slot_id: slot_id
         })
 
-        this.socket.on('click-on-slot-error', (data) => {
-            this.ERROR.showError(data.error)
-        })
-
         // if (data.room_turn_player === this.SESSION.getUserId()) {
         //     this.playSound('checked_success', 1)
         // }else{
@@ -677,5 +576,155 @@ class game {
         // }
     }
     
+    socketOnEvents() {
+        // recebendo lista de usuários atualizada a cada nova conexão
+        this.socket.on('data', (data) => {
+            this.ROOMS = data.data
+            this.renderRooms(data)
+        })
+
+        // recebendo a confirmação de sala criada
+        this.socket.on('create-room-confirmed', async (data) => {
+
+            const me = data.data.room_players.find(e => e.user_id === this.SESSION.getUserId())
+
+            this.SESSION.setRoomID(me.room_id)
+            this.SESSION.setColor(me.user_color)
+            // this.SESSION.setRoomOwner(me.room_owner)
+
+            await this.render('room')
+
+            this.socket.emit('map-slots', this.mapSlots(data.data))
+
+            this.showPlayers (data.data)
+        })
+
+
+        /// ---- IN ROOM
+
+        // recebendo sinal de não conectado
+        this.socket.on('not-connect', () => {
+            this.SESSION.setRoomID('lobby')
+            this.render('lobby')
+            // window.location.replace('/lobby')
+        })
+        
+        // recebendo dados da sala deo utros jogadores
+        this.socket.on('data-room', async (data) => {
+
+            console.log(data);
+
+            this.showPlayers(data.data)
+            this.setSlots(data.data)
+        })
+
+        // tornando novo dono da sala por desistência
+        this.socket.on('room_new_owner', async (data) => {
+            this.showPlayers(data.data)
+            this.ERROR.showError(data.msg)
+        })
+
+        // ---- CANCEL ROOM
+
+        // cancelamento de sala não autorizado
+        this.socket.on('cancel-room-not-authorized', (data) => {
+            return this.ERROR.showError(data.msg);
+        })
+
+        // cacelamento confirmado
+        this.socket.on('canceled-room', () => {
+            this.SESSION.setRoomID('lobby')
+            this.render('lobby')
+        })
+
+
+        // ---- ACESS
+
+        // senha invalida
+        this.socket.on('not-authorized-room', () => {
+            this.SPLASH_SCREEN.closeSplash();
+            return this.ERROR.showError("Acesso não autorizado, tente novamente!");
+        })
+
+        // confirma entrada na sala
+        this.socket.on('enter-room-confirmed', async (data) => {
+        // this.socket.on('data-room', async (data) => {
+            
+            const me = data.data.room_players.find(e => e.user_id === this.SESSION.getUserId())
+
+            this.SESSION.setRoomID(me.room_id)
+            this.SESSION.setColor(me.user_color)
+
+            await this.render('room')
+            
+            this.showPlayers(data.data)
+            this.setSlots(data.data)
+        })
+
+
+        // ---- START
+
+        // recebendo confirmação de inicio de jogo
+        this.socket.on('start-game-confirmed', (data) => {
+            this.showPlayers(data.data)
+        })
+
+        // ----- CLICK SLOT
+
+        // recebendo erro ao clicar no slot
+        this.socket.on('click-on-slot-error', (data) => {
+            this.ERROR.showError(data.error)
+        })
+
+
+        this.socket.on('timer-turn', (data) => {
+            const timer = document.querySelector('div.timer')
+            timer.innerText = `00:${("0" + data.timer).slice(-2)}`
+        })
+
+        // ---- position
+
+        // this.socket.on('show-outher-cursor-position', (data) => {
+
+        //     const offset = document.querySelector('div.game').getBoundingClientRect()
+        //     const container = document.querySelector('.game')
+        //     const cursor = document.getElementById(`${data.user_id}`) || document.createElement('div')
+            
+        //     if (this.MY_TURN) return cursor.remove()
+
+        //     const icon = cursor.querySelector('i') || document.createElement('i')
+        //     icon.classList.add(`fa`)
+        //     icon.classList.add(`fa-hand-pointer`)
+        //     icon.style = `color: #${data.user_color};`
+
+        //     cursor.appendChild(icon)
+
+        //     const label = cursor.querySelector('label') || document.createElement('label')
+        //     label.style = `
+        //         font-size: 8px;
+        //         padding: 5px;
+        //     `
+        //     label.innerHTML = data.user_name
+
+        //     cursor.appendChild(label)
+
+        //     cursor.style = `
+        //         width: 120px;
+        //         display: flex;
+        //         flex-direction: column;
+        //         position: fixed;
+        //         pointer-events: none;
+        //         left: ${(data.cursor.left+offset.left-60)}px;
+        //         top: ${data.cursor.right+offset.top}px;
+        //         z-index: 1;
+        //         align-items: center;
+
+        //     `
+
+        //     cursor.id = data.user_id
+            
+        //     container.appendChild(cursor)
+        // })
+    }
 
 }
