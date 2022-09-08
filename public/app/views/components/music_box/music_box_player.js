@@ -14,6 +14,7 @@ window.musicBox = {
     DURATION_SEEKBAR: null,
     CURRENT_DURATION: null,
     TOTAL_DURATION: null,
+    LABEL_DATA: null,
     VOL_INIT: 12,
     MUSIC_DATA: [],
     CURRENT_DATA: {},
@@ -22,7 +23,9 @@ window.musicBox = {
         await this.mountHtml()
 
         setTimeout(() => {
-            this.MUSIC_DATA = musicData
+            this.random()
+            // this.MUSIC_DATA = musicData
+
             this.toggle()
             this.update()
 
@@ -40,6 +43,16 @@ window.musicBox = {
             this.DURATION_SEEKBAR.oninput = (e) => this.setCurrentTime(e.target.value)
         }, 500)
     },
+    random() {
+        const list = []
+        while(list.length < musicData.length) {
+            const index = Math.floor(Math.random() * musicData.length)
+            const i = list.findIndex(e => e == musicData[index])
+            if (i==-1) list.push(musicData[index])
+        }
+
+        this.MUSIC_DATA = list
+    },
     prev() {
         this.CURRENT_PLAYING--;
         if (this.CURRENT_PLAYING == -1) this.CURRENT_PLAYING = this.MUSIC_DATA.length-1
@@ -51,6 +64,8 @@ window.musicBox = {
         this.update()
     },
     update() {
+        this.LABEL_DATA.innerText = `${("0" + (this.CURRENT_PLAYING+1)).slice(-2)}/${("0" + this.MUSIC_DATA.length).slice(-2)}`
+
         this.CURRENT_DATA = this.MUSIC_DATA[this.CURRENT_PLAYING]
 
         this.BODY.style.backgroundImage = `url("${this.CURRENT_DATA.image}")`
@@ -147,5 +162,6 @@ window.musicBox = {
         this.DURATION_SEEKBAR = document.querySelector('.music-box .footer .controls .duration_seekbar input')
         this.CURRENT_DURATION = document.querySelector('.music-box .footer .controls .current-duration')
         this.TOTAL_DURATION = document.querySelector('.music-box .footer .controls .total-duration')
+        this.LABEL_DATA = document.querySelector('.music-box .header label')
     }
 }

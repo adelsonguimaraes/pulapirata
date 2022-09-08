@@ -53,7 +53,7 @@ io.on('connection', (socket) => {
 
             room.room_time_turn--
 
-            if (room.room_status == 3) clearInterval(interval)
+            if (room.room_status != 2) clearInterval(interval)
 
             if (room.room_time_turn < 0) {
                 room.room_time_turn = user_connections.ROOM_TIMER_TURN
@@ -62,7 +62,7 @@ io.on('connection', (socket) => {
                 clickOnSlot(room.room_turn_player, slot.slot_id)
 
                 room = user_connections.getPublicRoomData(room.room_id)
-                if (room.room_status == 3) clearInterval(interval)
+                if (room.room_status != 2) clearInterval(interval)
                 
             }
         }, 1000)
