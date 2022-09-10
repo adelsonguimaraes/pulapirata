@@ -56,11 +56,13 @@ window.musicBox = {
     prev() {
         this.CURRENT_PLAYING--;
         if (this.CURRENT_PLAYING == -1) this.CURRENT_PLAYING = this.MUSIC_DATA.length-1
+        this.play()
         this.update()
     },
     next() {
         this.CURRENT_PLAYING++;
         if (this.CURRENT_PLAYING == this.MUSIC_DATA.length) this.CURRENT_PLAYING = 0
+        this.play()
         this.update()
     },
     update() {
@@ -78,14 +80,16 @@ window.musicBox = {
         }
         
     },
+    play() {
+        this.AUDIO.play()
+        this.PLAY_PAUSE_ICON.innerHTML = 'pause_arrow'
+    },
+    pause() {
+        this.AUDIO.pause()
+        this.PLAY_PAUSE_ICON.innerHTML = 'play_arrow'
+    },
     playToggle() {
-        if (this.AUDIO.paused) {
-            this.AUDIO.play()
-            this.PLAY_PAUSE_ICON.innerHTML = 'pause_arrow'
-         }else{ 
-            this.AUDIO.pause()
-            this.PLAY_PAUSE_ICON.innerHTML = 'play_arrow'
-         }
+        (this.AUDIO.paused) ? this.play() : this.pause()
     },
     muteToggle(e) {
         if (e.target.nodeName != 'I') return false
