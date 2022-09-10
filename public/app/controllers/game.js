@@ -151,6 +151,15 @@ class game {
                 <div class="input-group"">
                     <label>Senha</label>
                     <input type="password" placeholder="Insira apenas se quiser privar a sala" name="pass_room"/>
+                    
+                    <label>Bots</label>
+                    <select name="combo_bot" width="100">
+                        <option value="0">Selecione bots</option>
+                        <option value="1">01 Bot</option>
+                        <option value="2">02 Bot</option>
+                        <option value="3">03 Bot</option>
+                    </select>
+                    
                 </div>
                 <button onclick="GAME.confirmCreate()">Criar</button>
                 <button class="btn-brown" onclick="GAME.cancelCreate()">Cancelar</button>
@@ -160,6 +169,7 @@ class game {
 
     confirmCreate () {
         let room_pass = document.querySelector('input[name=pass_room]').value;
+        const num_bots = document.querySelector('select[name=combo_bot]').value;
         if (room_pass !== '') room_pass = CryptoJS.MD5(room_pass).toString();
         
         this.MODAL.close();
@@ -169,7 +179,8 @@ class game {
 
         const data = {
             user_id: this.SESSION.getUserId(), 
-            room_pass: room_pass
+            room_pass: room_pass,
+            num_bots: num_bots
         }
 
         this.socket.emit('create-room', data);
@@ -383,7 +394,7 @@ class game {
             
             let player = data.room_players.find(p => p.user_id === data.room_turn_player);
 
-            if (player.user_id === this.SESSION.getUserId()) {
+            if (player != undefined && player.user_id === this.SESSION.getUserId()) {
                 this.playSound('game_over', 1)
             }else{
                 this.playSound('winner', 1)

@@ -151,7 +151,7 @@ form {
     padding: 5px 8px;
     /* min-width: 80px; */
 }
-.input-group > input {
+.input-group > input,select {
     width: inherit;
     border: 0.1px solid #d0bdbd;
     padding: 5px 4px;
@@ -164,6 +164,30 @@ form {
 .inline-jc {
     justify-content: center !important;
     align-items: center;
+}
+
+.pd-20 {
+    padding: 20px !important;
+}
+.pd-top20 {
+    padding-top: 20px !important;
+}
+.pd-bottom20 {
+    padding-bottom: 20px !important;
+}
+
+.mg-20 {
+    margin: 20px;
+}
+.mg-top20 {
+    margin-top: 20px;
+}
+.mg-bottom20 {
+    margin-bottom: 20px;
+}
+
+.cursor-pointer {
+    cursor: pointer;
 }
 
 .mw-120 {

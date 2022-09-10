@@ -66,7 +66,7 @@ const user_connections = {
         slot_color: '',
         slot_shoot: ''
     },
-    ROOM_TIMER_TURN: 20,
+    ROOM_TIMER_TURN: 5,
     createUpdateRoom(data) {
         let room = {}
         const index = this.rooms.findIndex(e => e.room_id === data.room_id)
@@ -456,6 +456,7 @@ const user_connections = {
         if (slot.slot_shoot) {
             room.room_status = 3
             room.room_status_description = this.getStatusRoom(room.room_status)
+            this.removeBotsRoom(room.room_id)
         } else {
             const next_player = this.getNextPlayer(user.user_id, user.room_id)
             room.room_turn_player = next_player.user_id
@@ -464,8 +465,12 @@ const user_connections = {
 
         return players
 
+    },
+    removeBotsRoom(room_id) {
+        setTimeout(() => {
+            this.players = this.players.filter(e => e.room_id === room_id && e.user_id.toString().indexOf('bot')==-1)
+        }, 3000)
     }
-
     // getPublicData (user_id) {
     //     const publicData = []
     //     this.data.forEach(d => {

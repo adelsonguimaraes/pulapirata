@@ -68,6 +68,27 @@ io.on('connection', (socket) => {
         }, 1000)
     }
 
+    function addBots(room_id, num_bot) {
+        const room = user_connections.getRoomById(room_id)
+
+        for(i=0; i<parseInt(num_bot); i++) {
+            const num = i+1
+            const data = {
+                user_id: `bot0${num}`,
+                user_name: `bot0${num}`,user_status: '',
+                user_socket_id: null,
+                room_id: room_id
+            }
+
+            user_connections.createUpdateUser(data)
+            user_connections.setUserColor(data.user_id)
+        }
+    }
+
+    function removeBots(room_id) {
+        const room = user_connections.getRoomById(room_id)
+    }
+
     // connect lobby
     socket.on('connect-lobby', (data) => {
         // adicionando o socket_id
@@ -118,6 +139,8 @@ io.on('connection', (socket) => {
 
         user_connections.setRoomId(data.user_id, room_id)
         user_connections.setUserColor(data.user_id)
+
+        addBots(room_id, data.num_bots)
 
         socket.emit('create-room-confirmed', {
             data: user_connections.getPublicRoomData(room_id)
@@ -253,6 +276,9 @@ io.on('connection', (socket) => {
 
         // passando a titularidade da sala para o proximo jogador
         if (owner) {
+            const notBots = players.filter(e => e.user_id.toString().indexOf('bot')===-1)
+            if (notBots.length===0) user_connections.removeBotsRoom(room.room_id)
+
             const next_player = players.find(e => e.room_id == room.room_id)
             // se existir um próximo jogador passamos a titulariade
             if (next_player) room.room_owner = next_player.user_id
