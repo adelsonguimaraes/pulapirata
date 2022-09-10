@@ -51,7 +51,7 @@ class game {
     }
 
     confirmWelcome() {
-        musicBox.playToggle()
+        musicBox.play()
         this.MODAL.close()
     }
 
