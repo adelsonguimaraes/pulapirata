@@ -66,7 +66,8 @@ const user_connections = {
         slot_color: '',
         slot_shoot: ''
     },
-    ROOM_TIMER_TURN: 5,
+    ROOM_TIMER_TURN: 20,
+    ROOM_TIMER_TURN_BOT: 5,
     createUpdateRoom(data) {
         let room = {}
         const index = this.rooms.findIndex(e => e.room_id === data.room_id)
@@ -458,13 +459,21 @@ const user_connections = {
             room.room_status_description = this.getStatusRoom(room.room_status)
             this.removeBotsRoom(room.room_id)
         } else {
-            const next_player = this.getNextPlayer(user.user_id, user.room_id)
-            room.room_turn_player = next_player.user_id
-            room.room_time_turn = this.ROOM_TIMER_TURN
+            this.setTimerRoomTurn(room.room_id)
         }
 
         return players
 
+    },
+    setTimerRoomTurn(room_id) {
+        const room = this.getRoomById(room_id)
+
+        const next_player = this.getNextPlayer(room.room_turn_player, room_id)
+        room.room_turn_player = next_player.user_id
+
+        room.room_time_turn = (room.room_turn_player.toString().indexOf('bot')==-1) 
+                ? user_connections.ROOM_TIMER_TURN 
+                : user_connections.ROOM_TIMER_TURN_BOT
     },
     removeBotsRoom(room_id) {
         setTimeout(() => {

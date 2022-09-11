@@ -45,6 +45,8 @@ io.on('connection', (socket) => {
         const interval = setInterval(() => {
             room = user_connections.getRoomById(roomPlayers[0].room_id)
 
+            if (room === undefined) return clearInterval(interval)
+
             socket.emit('timer-turn', { timer: room.room_time_turn })
 
             roomPlayers.forEach(e => {
@@ -56,7 +58,6 @@ io.on('connection', (socket) => {
             if (room.room_status != 2) clearInterval(interval)
 
             if (room.room_time_turn < 0) {
-                room.room_time_turn = user_connections.ROOM_TIMER_TURN
                 const slot = user_connections.getRandomSlotAvailable(room.room_id)
                 
                 clickOnSlot(room.room_turn_player, slot.slot_id)
@@ -272,16 +273,21 @@ io.on('connection', (socket) => {
         user_connections.players = user_connections.players.filter(e => e.user_id != user.user_id)
 
         // capturando outros jogadores da sala
-        const players = user_connections.getPlayersInRoom(room.room_id)
+        players = user_connections.getPlayersInRoom(room.room_id)
+
+        // players não bots na sala
+        notBots = []
 
         // passando a titularidade da sala para o proximo jogador
         if (owner) {
-            const notBots = players.filter(e => e.user_id.toString().indexOf('bot')===-1)
+            notBots = players.filter(e => e.user_id.toString().indexOf('bot')===-1)
             if (notBots.length===0) user_connections.removeBotsRoom(room.room_id)
 
-            const next_player = players.find(e => e.room_id == room.room_id)
+            const next_player = notBots.find(e => e.room_id == room.room_id)
             // se existir um próximo jogador passamos a titulariade
             if (next_player) room.room_owner = next_player.user_id
+
+            players = user_connections.getPlayersInRoom(room.room_id)
         }
 
 
@@ -300,12 +306,11 @@ io.on('connection', (socket) => {
             room.room_status = 5
             room.room_status_description = user_connections.getStatusRoom(room.room_status)
         }
-
+        
         // removendo a sala do servidor caso não haja mais nenhum jogador
-        if (players.length <= 0) {
-            user_connections.rooms = user_connections.rooms.filter(e => e.room_id != room.room_id)
+        if (players.length <= 0 || notBots.length===0) {
+            return user_connections.rooms = user_connections.rooms.filter(e => e.room_id != room.room_id)
         }
-
 
         user_connections.players.forEach(e => {
             if (user.room_id != 'lobby' && user.room_id === e.room_id) {
