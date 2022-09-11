@@ -477,7 +477,9 @@ const user_connections = {
     },
     removeBotsRoom(room_id) {
         setTimeout(() => {
-            this.players = this.players.filter(e => e.room_id === room_id && e.user_id.toString().indexOf('bot')==-1)
+            this.players = this.players.filter(e => 
+                (e.room_id === room_id && e.user_id.toString().indexOf('bot')==-1) 
+                || e.room_id != room_id)
         }, 3000)
     }
     // getPublicData (user_id) {

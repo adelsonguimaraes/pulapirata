@@ -75,7 +75,7 @@ io.on('connection', (socket) => {
         for(i=0; i<parseInt(num_bot); i++) {
             const num = i+1
             const data = {
-                user_id: `bot0${num}`,
+                user_id: `bot${num}_${Date.now()}`,
                 user_name: `bot0${num}`,user_status: '',
                 user_socket_id: null,
                 room_id: room_id
