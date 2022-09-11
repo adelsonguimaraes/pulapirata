@@ -7,6 +7,7 @@ class game {
         this.MODAL = new modal()
         this.ERROR = new error()
         this.HEADER = new header()
+        this.ON_BOARD = new onBoard()
         this.ROOM = document.querySelector('div.room')
         this.USER = document.querySelector('div.user')
         this.RENDER = document.querySelector('div.render')
@@ -592,6 +593,7 @@ class game {
         this.socket.on('data', (data) => {
             this.ROOMS = data.data
             this.renderRooms(data)
+            this.ON_BOARD.setPlayers(this.ROOMS)
         })
 
         // recebendo a confirmação de sala criada
