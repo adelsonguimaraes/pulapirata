@@ -131,7 +131,7 @@ const user_connections = {
         })
     },
     getDataByUserId(user_id) {
-        return this.players.find(d => d.user_id === user_id)
+        return this.players.find(d => d.user_id === parseInt(user_id))
     },
     getDataBySocketId(socket_id) {
         return this.players.find(d => d.user_socket_id === socket_id)

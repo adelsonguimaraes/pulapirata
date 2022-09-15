@@ -7,7 +7,7 @@ class game {
         this.MODAL = new modal()
         this.ERROR = new error()
         this.HEADER = new header()
-        this.ON_BOARD = new onBoard()
+        this.ON_BOARD = new onBoard(this.emitMessage.bind(this), this.SESSION.getUserId())
         this.ROOM = document.querySelector('div.room')
         this.USER = document.querySelector('div.user')
         this.RENDER = document.querySelector('div.render')
@@ -28,6 +28,10 @@ class game {
         musicBox.start()
 
         this.socketOnEvents()
+    }
+
+    emitMessage(user_id, message) {
+        this.socket.emit('send-chat-message', {user_id: user_id, message: message})
     }
 
     welcome() {
@@ -693,6 +697,10 @@ class game {
         this.socket.on('timer-turn', (data) => {
             const timer = document.querySelector('div.timer')
             timer.innerText = `00:${("0" + data.timer).slice(-2)}`
+        })
+
+        this.socket.on('receive-chat-message', (data) => {
+            this.ON_BOARD.receiveMessage(data.message, data.user_id)
         })
 
         // ---- position

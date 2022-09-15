@@ -1,7 +1,6 @@
 .on_board {
     position: fixed;
-    left: -220px;
-    /* left: 0; */
+    left: -225px;
     top: 50%;
     width: 220px;
     min-height: 300px;
@@ -13,19 +12,20 @@
     border-radius: 6.37838px;
     transform: translate(0, -50%);
     transition: .5s;
+    z-index: 1;
 }
 
-.on_board:hover {
+.on_board_show {
     left: 0;
 }
 
-.on_board .float_btn {
+.on_board .float_btn{
     width: 50px;
     height: 60px;
     position: absolute;
-    background-color: #f6f6f6;
+    background-color: #e1e1e1;
     right: -50px;
-    top: 58px;
+    top: 20%;
     transform: translateY(-50%);
     display: flex;
     flex-direction: column;
@@ -39,28 +39,135 @@
     transition: .5s;
 }
 
-.on_board .board .title {
+.on_board .float_btn .badge {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #E035C5;
+    right: 10px;
+    top: 7px;
+    border-radius: 10px;
+    display: none;
+}
+
+.on_board .float_btn .badge_show {
+    display: block;
+}
+
+.on_board .chat {
+    display: none;
+    transition: .5s;
+    flex-direction: column;
+}
+
+.on_board .board {
+    transition: .5s;
+}
+
+.on_board .board > .title, .chat > .title {
     text-align: center;
     padding: 5px;
     border-bottom: 1px solid #dddd;
     border-collapse: collapse;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.on_board .board > .title > div, .chat > .title > div {
+    width: 100%;
+    text-align: center;
+}
+.on_board .cancel_btn {
+    position: absolute;
+    top: 0;
+    right: 5px;
+    width: 25px;
+    cursor: pointer;
+    z-index: 1;
 }
 
-.on_board .board .list {
+.on_board .board .list, .chat .list{
     padding: 5px;
     margin: 0;
 }
 
-.on_board .board .list li {
+.on_board .chat .list{
+    flex: auto;
+    overflow: auto;
+}
+
+.on_board .board > .list > li, .chat .list li{
     display: flex;
     align-items: center;
-    justify-content: flex-start;
     color: #3f3f3f;
     cursor: pointer;
 }
 
+.on_board .board > .list > li .badge{
+    width: 10px;
+    height: 10px;
+    background: #E035C5;
+    border-radius: 10px;
+    display: none;
+    margin: 5px;
+}
+.on_board .board > .list > li .badge_show{
+    display: block;
+}
+
+.on_board .chat .list li{
+    display: flow-root;
+}
+
+.on_board .chat .list li .msg{
+    padding: 5px 10px;
+    background-color: #dabbff;
+    border-radius: 10px;
+    margin: 3px;
+    max-width: 150px;
+    width: fit-content;
+}
+
+.on_board .chat .list li .me{
+    background-color: #c5cde5;
+    float: right;
+}
+
+.on_board .chat .footer {
+    display: flex;
+    justify-content: flex-start;
+    align-items: normal;
+}
+
+.on_board .btn {
+    background-color: #ececec;
+    color: #2c2c2c;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: .5s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.on_board .btn:hover {
+    background-color: #bebebe;
+}
+
+
+.on_board .chat_show {
+    height: 100%;
+    background: whitesmoke;
+    position: absolute;
+    top: 0;
+    width: 100%;
+    display: flex;
+}
+
 .on_board .board .list li:hover {
-    color: #797979;
+    background-color: #e7e7e7;
 }
 
 .on_board .board .list li .status_av {

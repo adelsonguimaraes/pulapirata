@@ -138,10 +138,13 @@ window.musicBox = {
         box_css.type = "text/css"
         box_css.href = "views/components/music_box/music_box.css"
         
-        const material = document.createElement('link')
-        material.rel="stylesheet"
-        material.type = "text/css"
-        material.href = "https://fonts.googleapis.com/icon?family=Material+Icons"
+        let material = document.querySelector('link[href*="Material+Icons"]')
+        if (!material) {
+            material = document.createElement('link')
+            material.rel="stylesheet"
+            material.type = "text/css"
+            material.href = "https://fonts.googleapis.com/icon?family=Material+Icons"
+        }
 
         document.head.append(box_css)
         document.head.append(material)

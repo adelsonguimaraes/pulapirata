@@ -254,6 +254,12 @@ io.on('connection', (socket) => {
         }
     })
 
+    socket.on('send-chat-message', (data) => {
+        const me = user_connections.getDataBySocketId(socket.id)
+        const user = user_connections.getDataByUserId(data.user_id)
+        socket.to(user.user_socket_id).emit('receive-chat-message', {'message': data.message, 'user_id': me.user_id})
+    })
+
     socket.on('disconnect', () => {
         // const result = user_connections.disconnectUser(socket.id)
         const user = user_connections.getDataBySocketId(socket.id)
