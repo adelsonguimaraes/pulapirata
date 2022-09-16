@@ -28,7 +28,6 @@ io.on('connection', (socket) => {
     // }
 
     function clickOnSlot(user_id, slot_id) {
-
         const players = user_connections.clickOnSlot(user_id, slot_id)
 
         socket.emit('data-room', { 'data': user_connections.getPublicRoomData(players[0].room_id) })

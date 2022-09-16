@@ -221,6 +221,10 @@ button:hover {
     position: fixed;
     bottom: 15px;
     right: 15px;
+    transition: .5s;
+}
+.btn-fbr:hover {
+    transform: rotateZ(90deg);
 }
 .btn-brown {
     background-color: brown;
